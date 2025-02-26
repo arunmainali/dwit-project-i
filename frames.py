@@ -47,10 +47,17 @@ class CanvasFrame(tk.Frame):
 
 		self.tool = 'brush'
 		self.stroke_color = 'black'
-		self.fill_color = 'white'
+		self.fill_color = 'black'
+
+		self.start_x = None
+		self.start_y = None
 
 		self.create_widgets()
 		self.create_layout()
+
+		self.canvas.bind('<Button-1>', self.on_button_press)
+		self.canvas.bind('<Button1-Motion>', self.on_mouse_drag)
+		self.canvas.bind('<ButtonRelease-1>', self.on_button_release)
 
 	def create_widgets(self):
 		self.canvas = tk.Canvas(self, bg = 'white')
@@ -88,7 +95,7 @@ class CanvasFrame(tk.Frame):
 
 	def on_mouse_drag(self, event):
 		self.canvas.delete('preview')
-		if self.tool == 'paint_brush':
+		if self.tool == 'straight_line':
 			self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill = self.stroke_color, tags = 'preview')
 		elif self.tool == 'rectangle':
 			self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline = self.stroke_color, fill = self.fill_color, tags = 'preview')
@@ -97,7 +104,7 @@ class CanvasFrame(tk.Frame):
 
 	def on_button_release(self, event):
 		self.canvas.delete('preview')
-		if self.tool == 'paint_brush':
+		if self.tool == 'straight_line':
 			self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill = self.stroke_color)
 		elif self.tool == 'rectangle':
 			self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline = self.stroke_color, fill = self.fill_color)

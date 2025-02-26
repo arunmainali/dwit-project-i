@@ -28,6 +28,8 @@ class ToolbarFrame(tk.Frame):
 		self.curve_line_button = ctk.CTkButton(self, image = self.curve_line_image, text = '', command = self.canvas_frame.select_curve_line)
 		self.straight_line_button = ctk.CTkButton(self, image = self.straight_line_image, text = '', command = self.canvas_frame.select_straight_line)
 
+		self.stroke_slider = ctk.CTkSlider(self, text = 'Stroke')
+
 	def create_layout(self):
 		# create the grid
 		self.columnconfigure((0, 1), weight=1)
@@ -95,7 +97,13 @@ class CanvasFrame(tk.Frame):
 
 	def on_mouse_drag(self, event):
 		self.canvas.delete('preview')
-		if self.tool == 'straight_line':
+		if self.tool == 'paint_brush':
+			self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill = self.stroke_color, capstyle = tk.ROUND, smooth = True)
+			self.start_x, self.start_y = event.x, event.y
+		elif self.tool == 'eraser':
+			self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill= 'white', capstyle=tk.ROUND, smooth=True)
+			self.start_x, self.start_y = event.x, event.y
+		elif self.tool == 'straight_line':
 			self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill = self.stroke_color, tags = 'preview')
 		elif self.tool == 'rectangle':
 			self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline = self.stroke_color, fill = self.fill_color, tags = 'preview')

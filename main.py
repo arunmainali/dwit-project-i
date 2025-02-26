@@ -12,16 +12,19 @@ class App(tk.Tk):
 		self.geometry(f'{size[0]}x{size[1]}')
 		self.minsize(size[0], size[1])
 
-		# layout
+		# configure layout
 		self.columnconfigure(0, weight=1)
 		self.columnconfigure(1, weight=5)
 		self.rowconfigure(0, weight=1)
 
 		# widget
-		self.menu = ToolbarFrame(self)
-		self.menu.grid(row = 0, column = 0, sticky = tk.NSEW)
+		self.toolbar_frame = ToolbarFrame(self)
+		self.toolbar_frame.grid(row = 0, column = 0, sticky = tk.NSEW)
+
+		self.canvas_frame = CanvasFrame(self)
+		self.canvas_frame.grid(row = 0, column = 1, sticky = tk.NSEW)
 
 		# run
 		self.mainloop()
 
-App('Classes', (600, 600))
+App('Whiteboard', (600, 600))

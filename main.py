@@ -18,11 +18,11 @@ class App(tk.Tk):
 		self.rowconfigure(0, weight=1)
 
 		# widget
-		self.toolbar_frame = ToolbarFrame(self)
-		self.toolbar_frame.grid(row = 0, column = 0, sticky = tk.NSEW)
-
 		self.canvas_frame = CanvasFrame(self)
 		self.canvas_frame.grid(row = 0, column = 1, sticky = tk.NSEW)
+
+		self.toolbar_frame = ToolbarFrame(self, self.canvas_frame)
+		self.toolbar_frame.grid(row = 0, column = 0, sticky = tk.NSEW)
 
 		# run
 		self.mainloop()

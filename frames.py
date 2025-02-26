@@ -28,8 +28,6 @@ class ToolbarFrame(tk.Frame):
 		self.curve_line_button = ctk.CTkButton(self, image = self.curve_line_image, text = '', command = self.canvas_frame.select_curve_line)
 		self.straight_line_button = ctk.CTkButton(self, image = self.straight_line_image, text = '', command = self.canvas_frame.select_straight_line)
 
-		self.stroke_slider = ctk.CTkSlider(self, text = 'Stroke')
-
 	def create_layout(self):
 		# create the grid
 		self.columnconfigure((0, 1), weight=1)
@@ -49,7 +47,7 @@ class CanvasFrame(tk.Frame):
 
 		self.tool = 'brush'
 		self.stroke_color = 'black'
-		self.fill_color = 'black'
+		self.fill_color = 'white'
 
 		self.start_x = None
 		self.start_y = None

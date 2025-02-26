@@ -62,7 +62,7 @@ class CanvasFrame(tk.Frame):
 		self.canvas.grid(row = 0, column = 0, sticky = 'nsew')
 
 	def select_paint_brush(self):
-		self.tool = 'brush'
+		self.tool = 'paint_brush'
 
 	def select_eraser(self):
 		self.tool = 'eraser'
@@ -81,3 +81,25 @@ class CanvasFrame(tk.Frame):
 
 	def clear_canvas(self):
 		self.canvas.delete('all')
+
+	def on_button_press(self, event):
+		self.start_x = event.x
+		self.start_y = event.y
+
+	def on_mouse_drag(self, event):
+		self.canvas.delete('preview')
+		if self.tool == 'paint_brush':
+			self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill = self.stroke_color, tags = 'preview')
+		elif self.tool == 'rectangle':
+			self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline = self.stroke_color, fill = self.fill_color, tags = 'preview')
+		elif self.tool == 'ellipse':
+			self.canvas.create_oval(self.start_x, self.start_y, event.x, event.y, outline = self.stroke_color, fill = self.fill_color, tags = 'preview')
+
+	def on_button_release(self, event):
+		self.canvas.delete('preview')
+		if self.tool == 'paint_brush':
+			self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill = self.stroke_color)
+		elif self.tool == 'rectangle':
+			self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline = self.stroke_color, fill = self.fill_color)
+		elif self.tool == 'ellipse':
+			self.canvas.create_oval(self.start_x, self.start_y, event.x, event.y, outline = self.stroke_color, fill = self.fill_color)

@@ -15,7 +15,7 @@ class ToolbarFrame(tk.Frame):
 
     def set_canvas_frame(self, canvas_frame):
         self.canvas_frame = canvas_frame
-        self.create_widgets()  # Recreate widgets to include canvas_frame commands
+        self.update_button_commands()
 
     def load_images(self):
         self.paint_brush_image = ctk.CTkImage(Image.open('images/paint-brush.png'))
@@ -26,22 +26,22 @@ class ToolbarFrame(tk.Frame):
         self.straight_line_image = ctk.CTkImage(Image.open('images/straight-line.png'))
 
     def create_widgets(self):
-        if self.canvas_frame:
-            self.paint_brush_button = ctk.CTkButton(self, image=self.paint_brush_image, text='', command=self.canvas_frame.select_paint_brush)
-            self.eraser_button = ctk.CTkButton(self, image=self.eraser_image, text='', command=self.canvas_frame.select_eraser)
-            self.rectangle_button = ctk.CTkButton(self, image=self.rectangle_image, text='', command=self.canvas_frame.select_rectangle)
-            self.ellipse_button = ctk.CTkButton(self, image=self.ellipse_image, text='', command=self.canvas_frame.select_ellipse)
-            self.curve_line_button = ctk.CTkButton(self, image=self.curve_line_image, text='', command=self.canvas_frame.select_curve_line)
-            self.straight_line_button = ctk.CTkButton(self, image=self.straight_line_image, text='', command=self.canvas_frame.select_straight_line)
-        else:
-            self.paint_brush_button = ctk.CTkButton(self, image=self.paint_brush_image, text='')
-            self.eraser_button = ctk.CTkButton(self, image=self.eraser_image, text='')
-            self.rectangle_button = ctk.CTkButton(self, image=self.rectangle_image, text='')
-            self.ellipse_button = ctk.CTkButton(self, image=self.ellipse_image, text='')
-            self.curve_line_button = ctk.CTkButton(self, image=self.curve_line_image, text='')
-            self.straight_line_button = ctk.CTkButton(self, image=self.straight_line_image, text='')
+        self.paint_brush_button = ctk.CTkButton(self, image=self.paint_brush_image, text='')
+        self.eraser_button = ctk.CTkButton(self, image=self.eraser_image, text='')
+        self.rectangle_button = ctk.CTkButton(self, image=self.rectangle_image, text='')
+        self.ellipse_button = ctk.CTkButton(self, image=self.ellipse_image, text='')
+        self.curve_line_button = ctk.CTkButton(self, image=self.curve_line_image, text='')
+        self.straight_line_button = ctk.CTkButton(self, image=self.straight_line_image, text='')
 
         self.stroke_size_slider = ctk.CTkSlider(self, from_=1, to=20, variable=self.stroke_width)
+
+    def update_button_commands(self):
+        self.paint_brush_button.configure(command=self.canvas_frame.select_paint_brush)
+        self.eraser_button.configure(command=self.canvas_frame.select_eraser)
+        self.rectangle_button.configure(command=self.canvas_frame.select_rectangle)
+        self.ellipse_button.configure(command=self.canvas_frame.select_ellipse)
+        self.curve_line_button.configure(command=self.canvas_frame.select_curve_line)
+        self.straight_line_button.configure(command=self.canvas_frame.select_straight_line)
 
     def create_layout(self):
         # create the grid
@@ -67,6 +67,7 @@ class CanvasFrame(tk.Frame):
         self.tool = 'paint_brush'
         self.stroke_color = 'black'
         self.fill_color = 'white'
+        self.canvas_bg = 'white'  # Explicitly set the canvas background color
 
         self.start_x = None
         self.start_y = None
@@ -79,7 +80,7 @@ class CanvasFrame(tk.Frame):
         self.canvas.bind('<ButtonRelease-1>', self.on_button_release)
 
     def create_widgets(self):
-        self.canvas = tk.Canvas(self, bg='white')
+        self.canvas = tk.Canvas(self, bg=self.canvas_bg)  # Use the explicit background color
 
     def create_layout(self):
         self.columnconfigure(0, weight=1)
@@ -119,7 +120,8 @@ class CanvasFrame(tk.Frame):
             self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, width=stroke_width, capstyle=tk.ROUND, smooth=True)
             self.start_x, self.start_y = event.x, event.y
         elif self.tool == 'eraser':
-            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill='white', width=stroke_width, capstyle=tk.ROUND, smooth=True)
+            # Use the actual background color of the canvas to erase
+            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.canvas['bg'], width=stroke_width, capstyle=tk.ROUND, smooth=True)
             self.start_x, self.start_y = event.x, event.y
         elif self.tool == 'straight_line':
             self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, tags='preview')

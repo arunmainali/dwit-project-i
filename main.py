@@ -19,10 +19,10 @@ class App(tk.Tk):
 
         # widget
         self.toolbar_frame = ToolbarFrame(self)
-        self.toolbar_frame.grid(row = 0, column = 0, sticky = tk.NSEW)
+        self.toolbar_frame.grid(row=0, column=0, sticky=tk.NSEW)
 
         self.canvas_frame = CanvasFrame(self, self.toolbar_frame)
-        self.canvas_frame.grid(row = 0, column = 1, sticky = tk.NSEW)
+        self.canvas_frame.grid(row=0, column=1, sticky=tk.NSEW)
 
         # passing canvas_frame here to avoid circular dependency
         self.toolbar_frame.set_canvas_frame(self.canvas_frame)

@@ -67,7 +67,7 @@ class CanvasFrame(tk.Frame):
         self.tool = 'paint_brush'
         self.stroke_color = 'black'
         self.fill_color = 'white'
-        self.canvas_bg = 'white'  # Explicitly set the canvas background color
+        self.canvas_bg = 'white'
 
         self.start_x = None
         self.start_y = None
@@ -120,7 +120,6 @@ class CanvasFrame(tk.Frame):
             self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, width=stroke_width, capstyle=tk.ROUND, smooth=True)
             self.start_x, self.start_y = event.x, event.y
         elif self.tool == 'eraser':
-            # Use the actual background color of the canvas to erase
             self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.canvas['bg'], width=stroke_width, capstyle=tk.ROUND, smooth=True)
             self.start_x, self.start_y = event.x, event.y
         elif self.tool == 'straight_line':

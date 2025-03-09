@@ -35,6 +35,14 @@ class ToolbarFrame(tk.Frame):
 
         self.stroke_size_slider = ctk.CTkSlider(self, from_=1, to=20, variable=self.stroke_width)
 
+        self.stroke_size_slider.grid(row=3, column=0, columnspan=2)
+        self.color_label = ctk.CTkLabel(self, text='Color:')
+        self.color_dropdown = ctk.CTkOptionMenu(
+            self,
+            values = self.color_options,
+            variable = self.stroke_color,
+        )
+
     def update_button_commands(self):
         self.paint_brush_button.configure(command=self.canvas_frame.select_paint_brush)
         self.eraser_button.configure(command=self.canvas_frame.select_eraser)
@@ -43,10 +51,16 @@ class ToolbarFrame(tk.Frame):
         self.curve_line_button.configure(command=self.canvas_frame.select_curve_line)
         self.straight_line_button.configure(command=self.canvas_frame.select_straight_line)
 
+        self.color_dropdown.configure(command=self.on_color_change)
+    
+    def on_color_change(self, color):
+        if self.canvas_frame:
+            self.canvas_frame.update_stroke_color(color)
+
     def create_layout(self):
         # create the grid
         self.columnconfigure((0, 1), weight=1)
-        self.rowconfigure((0, 1, 2, 3), weight=1)
+        self.rowconfigure((0, 1, 2, 3, 4), weight=1)
 
         # place the widgets
         self.paint_brush_button.grid(row=0, column=0)
@@ -56,7 +70,9 @@ class ToolbarFrame(tk.Frame):
         self.curve_line_button.grid(row=2, column=0)
         self.straight_line_button.grid(row=2, column=1)
 
-        self.stroke_size_slider.grid(row=3, column=0, columnspan=2)
+        self.color_label.grid(row = 4, column = 0)
+        self.color_dropdown.grid(row = 4, column = 1)
+
 
 class CanvasFrame(tk.Frame):
     def __init__(self, parent, toolbar_frame):
@@ -80,7 +96,7 @@ class CanvasFrame(tk.Frame):
         self.canvas.bind('<ButtonRelease-1>', self.on_button_release)
 
     def create_widgets(self):
-        self.canvas = tk.Canvas(self, bg=self.canvas_bg)  # Use the explicit background color
+        self.canvas = tk.Canvas(self, bg=self.canvas_bg)
 
     def create_layout(self):
         self.columnconfigure(0, weight=1)
@@ -108,6 +124,9 @@ class CanvasFrame(tk.Frame):
 
     def clear_canvas(self):
         self.canvas.delete('all')
+
+    def update_stroke_color(self, color):
+        self.stroke_color = color
 
     def on_button_press(self, event):
         self.start_x = event.x

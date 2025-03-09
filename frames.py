@@ -8,6 +8,8 @@ class ToolbarFrame(tk.Frame):
 
         self.canvas_frame = None
         self.stroke_width = tk.DoubleVar(value=2)
+        self.stroke_color = tk.StringVar(value = 'black')
+        self.color_options = ['black', 'red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'brown', 'white']
 
         self.load_images()
         self.create_widgets()

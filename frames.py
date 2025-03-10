@@ -37,9 +37,9 @@ class ToolbarFrame(tk.Frame):
 
         self.stroke_size_slider = ctk.CTkSlider(self, from_=1, to=20, variable=self.stroke_width)
 
-        self.text_button = ctk.CTkButton(self, text='Text', width = 40, height = 40)
+        self.text_button = ctk.CTkButton(self, text='Text')
 
-        self.stroke_size_slider.grid(row=3, column=0, columnspan=2)
+        self.stroke_size_slider.grid(row=4, column=0, columnspan=2)
         self.color_label = ctk.CTkLabel(self, text='Color:')
         self.color_dropdown = ctk.CTkOptionMenu(
             self,
@@ -77,8 +77,8 @@ class ToolbarFrame(tk.Frame):
         self.straight_line_button.grid(row=2, column=1)
         self.text_button.grid(row = 3, column = 0)
 
-        self.color_label.grid(row = 4, column = 0)
-        self.color_dropdown.grid(row = 4, column = 1)
+        self.color_label.grid(row = 5, column = 0)
+        self.color_dropdown.grid(row = 5, column = 1)
 
 
 class CanvasFrame(tk.Frame):

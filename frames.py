@@ -86,7 +86,6 @@ class CanvasFrame(tk.Frame):
         self.stroke_color = 'black'
         self.fill_color = 'white'
         self.canvas_bg = 'white'
-        self.stroke_width = self.toolbar_frame.stroke_width.get()
 
         self.start_x = None
         self.start_y = None
@@ -137,24 +136,26 @@ class CanvasFrame(tk.Frame):
 
     def on_mouse_drag(self, event):
         self.canvas.delete('preview')
+        stroke_width = self.toolbar_frame.stroke_width.get()
         if self.tool == 'paint_brush':
-            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, width = self.stroke_width, capstyle=tk.ROUND, smooth=True)
+            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, width = stroke_width, capstyle=tk.ROUND, smooth=True)
             self.start_x, self.start_y = event.x, event.y
         elif self.tool == 'eraser':
-            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.canvas['bg'], width = self.stroke_width, capstyle=tk.ROUND, smooth=True)
+            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.canvas['bg'], width = stroke_width, capstyle=tk.ROUND, smooth=True)
             self.start_x, self.start_y = event.x, event.y
         elif self.tool == 'straight_line':
-            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, width = self.stroke_width, tags='preview')
+            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, width = stroke_width, tags='preview')
         elif self.tool == 'rectangle':
-            self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline=self.stroke_color, fill=self.fill_color, width = self.stroke_width, tags='preview')
+            self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline=self.stroke_color, fill=self.fill_color, width = stroke_width, tags='preview')
         elif self.tool == 'ellipse':
-            self.canvas.create_oval(self.start_x, self.start_y, event.x, event.y, outline=self.stroke_color, fill=self.fill_color, width = self.stroke_width, tags='preview')
+            self.canvas.create_oval(self.start_x, self.start_y, event.x, event.y, outline=self.stroke_color, fill=self.fill_color, width = stroke_width, tags='preview')
 
     def on_button_release(self, event):
         self.canvas.delete('preview')
+        stroke_width = self.toolbar_frame.stroke_width.get()
         if self.tool == 'straight_line':
-            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, width = self.stroke_width)
+            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y, fill=self.stroke_color, width = stroke_width)
         elif self.tool == 'rectangle':
-            self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline=self.stroke_color, fill=self.fill_color, width = self.stroke_width)
+            self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline=self.stroke_color, fill=self.fill_color, width = stroke_width)
         elif self.tool == 'ellipse':
-            self.canvas.create_oval(self.start_x, self.start_y, event.x, event.y, outline=self.stroke_color, fill=self.fill_color, width = self.stroke_width)
+            self.canvas.create_oval(self.start_x, self.start_y, event.x, event.y, outline=self.stroke_color, fill=self.fill_color, width = stroke_width)

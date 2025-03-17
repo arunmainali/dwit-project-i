@@ -1,6 +1,8 @@
 import tkinter as tk
 import customtkinter as ctk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageGrab
+from tkinter import filedialog
+import os
 
 class ToolbarFrame(tk.Frame):
     def __init__(self, parent):
@@ -10,6 +12,9 @@ class ToolbarFrame(tk.Frame):
         self.stroke_width = tk.DoubleVar(value=2)
         self.stroke_color = tk.StringVar(value = 'black')
         self.color_options = ['black', 'red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'brown', 'white']
+
+        self.export_frame = tk.StringVar(value = 'PNG')
+        self.export_options = ['PNG', 'JPG']
 
         self.load_images()
         self.create_widgets()
@@ -26,6 +31,7 @@ class ToolbarFrame(tk.Frame):
         self.ellipse_image = ctk.CTkImage(Image.open('images/ellipse.png'))
         self.curve_line_image = ctk.CTkImage(Image.open('images/curve-line.png'))
         self.straight_line_image = ctk.CTkImage(Image.open('images/straight-line.png'))
+        # TODO: add an export image
 
     def create_widgets(self):
         self.paint_brush_button = ctk.CTkButton(self, image=self.paint_brush_image, text='')
@@ -43,6 +49,13 @@ class ToolbarFrame(tk.Frame):
             values = self.color_options,
             variable = self.stroke_color,
         )
+        self.export_button = ctk.CTkButton(self, text = 'Export')
+        self.export_format_label = ctk.CTkLabel(self, text = 'Format:')
+        self.export_format_dropdown = ctk.CTkOptionMenu(
+            self,
+            values = self.export_options,
+            variable = self.export_frame,
+        )
 
 
     def update_button_commands(self):
@@ -54,7 +67,12 @@ class ToolbarFrame(tk.Frame):
         self.straight_line_button.configure(command=self.canvas_frame.select_straight_line)
         self.text_button.configure(command = self.canvas_frame.select_text)
         self.color_dropdown.configure(command=self.on_color_change)
-    
+        self.export_button.configure(command = self.export_canvas)
+
+    def export_canvas(self):
+        if self.canvas_frame:
+            self.canvas_frame.export_image(self.export_frame.get())
+
     def on_color_change(self, color):
         if self.canvas_frame:
             self.canvas_frame.update_stroke_color(color)
@@ -62,7 +80,7 @@ class ToolbarFrame(tk.Frame):
     def create_layout(self):
         # create the grid
         self.columnconfigure((0, 1), weight=1)
-        self.rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
+        self.rowconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)
 
         # place the widgets
         self.paint_brush_button.grid(row=0, column=0)
@@ -75,6 +93,10 @@ class ToolbarFrame(tk.Frame):
 
         self.color_label.grid(row = 5, column = 0)
         self.color_dropdown.grid(row = 5, column = 1)
+
+        self.export_button.grid(row = 3, column = 1)
+        self.export_format_label.grid(row = 4, column = 0)
+        self.export_format_dropdown.grid(row = 4, column = 1)
 
 
 class CanvasFrame(tk.Frame):
@@ -138,38 +160,115 @@ class CanvasFrame(tk.Frame):
         self.stroke_color = color
 
     def create_text_box(self, x, y):
-        text_widget = tk.Text(self.canvas, width=20, height=4, wrap=tk.WORD, 
-                            font=('Arial', int(self.toolbar_frame.stroke_width.get())), 
+        text_widget = tk.Text(self.canvas, width=20, height=4, wrap=tk.WORD,
+                            font=('Arial', int(self.toolbar_frame.stroke_width.get())),
                             fg=self.stroke_color)
-        
+
         text_widget_window = self.canvas.create_window(x, y, window=text_widget, anchor=tk.NW)
-        
+
         text_widget.bind("<FocusOut>", lambda e, w=text_widget, win=text_widget_window: self.finalize_text(w, win))
         text_widget.bind("<Return>", lambda e, w=text_widget, win=text_widget_window: self.finalize_text(w, win))
-        
+
         self.text_widgets.append((text_widget, text_widget_window))
         self.active_text = text_widget
         text_widget.focus_set()
 
     def finalize_text(self, text_widget, window_id):
         text_content = text_widget.get("1.0", tk.END).strip()
-        
+
         if text_content:
             x, y = self.canvas.coords(window_id)
-            
+
             self.canvas.create_text(
-                x, y, 
-                text=text_content, 
+                x, y,
+                text=text_content,
                 font=('Arial', int(self.toolbar_frame.stroke_width.get())),
                 fill=self.stroke_color,
                 anchor=tk.NW
             )
-        
+
         self.canvas.delete(window_id)
         if (text_widget, window_id) in self.text_widgets:
             self.text_widgets.remove((text_widget, window_id))
-        
+
         self.active_text = None
+
+    def export_image(self, format_type):
+        """
+    Export the canvas as either PNG or JPG image.
+    """
+        # Default extension based on format type
+        extension = '.png' if format_type == 'PNG' else '.jpg'
+        file_types = [('PNG files', '*.png'), ('JPEG files', '*.jpg')] if format_type == 'PNG' else [
+            ('JPEG files', '*.jpg'), ('PNG files', '*.png')]
+
+        # Ask user for save location
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=extension,
+            filetypes=file_types,
+            title="Save Canvas As Image"
+        )
+
+        if not file_path:
+            return  # User canceled the dialog
+
+        # Make sure the file has the correct extension
+        if not file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+            file_path += extension
+
+        try:
+            # Get canvas coordinates
+            x = self.canvas.winfo_rootx()
+            y = self.canvas.winfo_rooty()
+            width = self.canvas.winfo_width()
+            height = self.canvas.winfo_height()
+
+            # Take a screenshot of the canvas area
+            screenshot = ImageGrab.grab(bbox=(x, y, x + width, y + height))
+
+            # Save with the appropriate format
+            if file_path.lower().endswith(('.jpg', '.jpeg')):
+                # Convert to RGB for JPEG (removes alpha channel)
+                screenshot = screenshot.convert('RGB')
+
+            screenshot.save(file_path)
+
+            # Show confirmation message
+            confirmation_window = ctk.CTkToplevel(self)
+            confirmation_window.title("Export Successful")
+            confirmation_window.geometry("300x100")
+            confirmation_window.resizable(False, False)
+
+            # Center the window
+            confirmation_window.update_idletasks()
+            x = (confirmation_window.winfo_screenwidth() - confirmation_window.winfo_width()) // 2
+            y = (confirmation_window.winfo_screenheight() - confirmation_window.winfo_height()) // 2
+            confirmation_window.geometry(f"+{x}+{y}")
+
+            # Add message
+            message = f"Canvas exported successfully to:\n{os.path.basename(file_path)}"
+            label = ctk.CTkLabel(confirmation_window, text=message)
+            label.pack(pady=20)
+
+            # Auto-close after 2 seconds
+            confirmation_window.after(2000, confirmation_window.destroy)
+
+        except Exception as e:
+            # Show error message
+            error_window = ctk.CTkToplevel(self)
+            error_window.title("Export Error")
+            error_window.geometry("300x100")
+            error_window.resizable(False, False)
+
+            # Center the window
+            error_window.update_idletasks()
+            x = (error_window.winfo_screenwidth() - error_window.winfo_width()) // 2
+            y = (error_window.winfo_screenheight() - error_window.winfo_height()) // 2
+            error_window.geometry(f"+{x}+{y}")
+
+            # Add message
+            label = ctk.CTkLabel(error_window, text=f"Error exporting canvas:\n{str(e)}")
+            label.pack(pady=20)
 
     def on_button_press(self, event):
         self.start_x = event.x

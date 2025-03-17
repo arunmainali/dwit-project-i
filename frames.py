@@ -34,11 +34,8 @@ class ToolbarFrame(tk.Frame):
         self.ellipse_button = ctk.CTkButton(self, image=self.ellipse_image, text='')
         self.curve_line_button = ctk.CTkButton(self, image=self.curve_line_image, text='')
         self.straight_line_button = ctk.CTkButton(self, image=self.straight_line_image, text='')
-
         self.stroke_size_slider = ctk.CTkSlider(self, from_=1, to=20, variable=self.stroke_width)
-
         self.text_button = ctk.CTkButton(self, text='Text')
-
         self.stroke_size_slider.grid(row=4, column=0, columnspan=2)
         self.color_label = ctk.CTkLabel(self, text='Color:')
         self.color_dropdown = ctk.CTkOptionMenu(
@@ -56,7 +53,6 @@ class ToolbarFrame(tk.Frame):
         self.curve_line_button.configure(command=self.canvas_frame.select_curve_line)
         self.straight_line_button.configure(command=self.canvas_frame.select_straight_line)
         self.text_button.configure(command = self.canvas_frame.select_text)
-
         self.color_dropdown.configure(command=self.on_color_change)
     
     def on_color_change(self, color):
@@ -142,32 +138,25 @@ class CanvasFrame(tk.Frame):
         self.stroke_color = color
 
     def create_text_box(self, x, y):
-        # Create a text entry widget on the canvas
         text_widget = tk.Text(self.canvas, width=20, height=4, wrap=tk.WORD, 
                             font=('Arial', int(self.toolbar_frame.stroke_width.get())), 
                             fg=self.stroke_color)
         
-        # Place the text widget at the clicked position
         text_widget_window = self.canvas.create_window(x, y, window=text_widget, anchor=tk.NW)
         
-        # Add event handlers for the text widget
         text_widget.bind("<FocusOut>", lambda e, w=text_widget, win=text_widget_window: self.finalize_text(w, win))
         text_widget.bind("<Return>", lambda e, w=text_widget, win=text_widget_window: self.finalize_text(w, win))
         
-        # Store and focus the new text widget
         self.text_widgets.append((text_widget, text_widget_window))
         self.active_text = text_widget
         text_widget.focus_set()
 
     def finalize_text(self, text_widget, window_id):
-        # Convert entry widget to permanent text on the canvas
         text_content = text_widget.get("1.0", tk.END).strip()
         
         if text_content:
-            # Get the coordinates of the text widget
             x, y = self.canvas.coords(window_id)
             
-            # Create permanent text on the canvas
             self.canvas.create_text(
                 x, y, 
                 text=text_content, 
@@ -176,7 +165,6 @@ class CanvasFrame(tk.Frame):
                 anchor=tk.NW
             )
         
-        # Remove the text entry widget
         self.canvas.delete(window_id)
         if (text_widget, window_id) in self.text_widgets:
             self.text_widgets.remove((text_widget, window_id))

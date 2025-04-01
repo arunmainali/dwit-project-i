@@ -159,26 +159,35 @@ class CanvasFrame(tk.Frame):
     def update_stroke_color(self, color):
         self.stroke_color = color
 
+    # Fix for the text widget issue
     def create_text_box(self, x, y):
+        # Create a text entry widget on the canvas
         text_widget = tk.Text(self.canvas, width=20, height=4, wrap=tk.WORD,
-                            font=('Arial', int(self.toolbar_frame.stroke_width.get())),
-                            fg=self.stroke_color)
+                              font=('Arial', int(self.toolbar_frame.stroke_width.get())),
+                              fg=self.stroke_color)
 
+        # Place the text widget at the clicked position
         text_widget_window = self.canvas.create_window(x, y, window=text_widget, anchor=tk.NW)
 
-        text_widget.bind("<FocusOut>", lambda e, w=text_widget, win=text_widget_window: self.finalize_text(w, win))
-        text_widget.bind("<Return>", lambda e, w=text_widget, win=text_widget_window: self.finalize_text(w, win))
+        # Store the coordinates along with the text widget
+        self.text_widgets.append((text_widget, text_widget_window, x, y))
 
-        self.text_widgets.append((text_widget, text_widget_window))
+        # Add event handlers for the text widget
+        text_widget.bind("<FocusOut>", lambda e, w=text_widget, win=text_widget_window, x=x, y=y:
+        self.finalize_text(w, win, x, y))
+        text_widget.bind("<Return>", lambda e, w=text_widget, win=text_widget_window, x=x, y=y:
+        self.finalize_text(w, win, x, y))
+
+        # Focus the new text widget
         self.active_text = text_widget
         text_widget.focus_set()
 
-    def finalize_text(self, text_widget, window_id):
+    def finalize_text(self, text_widget, window_id, x, y):
+        # Convert entry widget to permanent text on the canvas
         text_content = text_widget.get("1.0", tk.END).strip()
 
         if text_content:
-            x, y = self.canvas.coords(window_id)
-
+            # Use the stored coordinates instead of trying to get them from canvas.coords
             self.canvas.create_text(
                 x, y,
                 text=text_content,
@@ -187,9 +196,14 @@ class CanvasFrame(tk.Frame):
                 anchor=tk.NW
             )
 
+        # Remove the text entry widget
         self.canvas.delete(window_id)
-        if (text_widget, window_id) in self.text_widgets:
-            self.text_widgets.remove((text_widget, window_id))
+
+        # Remove from our list of text widgets
+        for widget_tuple in self.text_widgets[:]:
+            if widget_tuple[0] == text_widget and widget_tuple[1] == window_id:
+                self.text_widgets.remove(widget_tuple)
+                break
 
         self.active_text = None
 
@@ -217,21 +231,39 @@ class CanvasFrame(tk.Frame):
             file_path += extension
 
         try:
-            # Get canvas coordinates
-            x = self.canvas.winfo_rootx()
-            y = self.canvas.winfo_rooty()
+            # Get canvas dimensions
             width = self.canvas.winfo_width()
             height = self.canvas.winfo_height()
 
-            # Take a screenshot of the canvas area
-            screenshot = ImageGrab.grab(bbox=(x, y, x + width, y + height))
+            # Create a new image with white background
+            canvas_image = Image.new("RGB", (width, height), "white")
 
-            # Save with the appropriate format
-            if file_path.lower().endswith(('.jpg', '.jpeg')):
-                # Convert to RGB for JPEG (removes alpha channel)
-                screenshot = screenshot.convert('RGB')
+            # Create a temporary PostScript file
+            temp_ps_file = f"{os.path.splitext(file_path)[0]}_temp.ps"
 
-            screenshot.save(file_path)
+            # Get canvas content as PostScript
+            self.canvas.update()  # Make sure canvas is updated
+            self.canvas.postscript(file=temp_ps_file, colormode='color', width=width, height=height)
+
+            # Open the PostScript file with Pillow
+            try:
+                ps_image = Image.open(temp_ps_file)
+                # Resize the image if needed
+                ps_image = ps_image.resize((width, height), Image.LANCZOS)
+
+                # Paste the PostScript image onto our white background
+                canvas_image.paste(ps_image, (0, 0))
+
+                # Save with the appropriate format
+                if file_path.lower().endswith(('.jpg', '.jpeg')):
+                    canvas_image = canvas_image.convert('RGB')
+
+                canvas_image.save(file_path)
+
+            finally:
+                # Clean up temporary file
+                if os.path.exists(temp_ps_file):
+                    os.remove(temp_ps_file)
 
             # Show confirmation message
             confirmation_window = ctk.CTkToplevel(self)

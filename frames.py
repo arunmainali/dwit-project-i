@@ -208,99 +208,49 @@ class CanvasFrame(tk.Frame):
         self.active_text = None
 
     def export_image(self, format_type):
-        """
-    Export the canvas as either PNG or JPG image.
-    """
-        # Default extension based on format type
-        extension = '.png' if format_type == 'PNG' else '.jpg'
-        file_types = [('PNG files', '*.png'), ('JPEG files', '*.jpg')] if format_type == 'PNG' else [
-            ('JPEG files', '*.jpg'), ('PNG files', '*.png')]
-
-        # Ask user for save location
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=extension,
-            filetypes=file_types,
-            title="Save Canvas As Image"
+        # Ask the user for a save location
+        file_extension = format_type.lower()
+        filename = filedialog.asksaveasfilename(
+            defaultextension=f".{file_extension}",
+            filetypes=[
+                (f"{format_type} files", f"*.{file_extension}"),
+                ("All files", "*.*")
+            ]
         )
 
-        if not file_path:
-            return  # User canceled the dialog
+        if not filename:
+            return  # User cancelled the dialog
 
-        # Make sure the file has the correct extension
-        if not file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-            file_path += extension
+        # Get canvas dimensions
+        width = self.canvas.winfo_width()
+        height = self.canvas.winfo_height()
 
+        # Create a new image with the canvas dimensions and background color
+        image = Image.new("RGB", (width, height), self.canvas_bg)
+
+        # Create a temporary file for the PostScript output
+        temp_ps_file = "temp_canvas.ps"
+
+        # Save the canvas as a PostScript file
+        self.canvas.postscript(file=temp_ps_file, colormode='color', width=width, height=height)
+
+        # Convert the PostScript to an image
+        ps_image = Image.open(temp_ps_file)
+
+        # Paste the PS image onto our background
+        image.paste(ps_image)
+
+        # Save the image in the requested format
+        if format_type == 'PNG':
+            image.save(filename, 'PNG')
+        elif format_type == 'JPG':
+            image.save(filename, 'JPEG')
+
+        # Clean up the temporary file
         try:
-            # Get canvas dimensions
-            width = self.canvas.winfo_width()
-            height = self.canvas.winfo_height()
-
-            # Create a new image with white background
-            canvas_image = Image.new("RGB", (width, height), "white")
-
-            # Create a temporary PostScript file
-            temp_ps_file = f"{os.path.splitext(file_path)[0]}_temp.ps"
-
-            # Get canvas content as PostScript
-            self.canvas.update()  # Make sure canvas is updated
-            self.canvas.postscript(file=temp_ps_file, colormode='color', width=width, height=height)
-
-            # Open the PostScript file with Pillow
-            try:
-                ps_image = Image.open(temp_ps_file)
-                # Resize the image if needed
-                ps_image = ps_image.resize((width, height), Image.LANCZOS)
-
-                # Paste the PostScript image onto our white background
-                canvas_image.paste(ps_image, (0, 0))
-
-                # Save with the appropriate format
-                if file_path.lower().endswith(('.jpg', '.jpeg')):
-                    canvas_image = canvas_image.convert('RGB')
-
-                canvas_image.save(file_path)
-
-            finally:
-                # Clean up temporary file
-                if os.path.exists(temp_ps_file):
-                    os.remove(temp_ps_file)
-
-            # Show confirmation message
-            confirmation_window = ctk.CTkToplevel(self)
-            confirmation_window.title("Export Successful")
-            confirmation_window.geometry("300x100")
-            confirmation_window.resizable(False, False)
-
-            # Center the window
-            confirmation_window.update_idletasks()
-            x = (confirmation_window.winfo_screenwidth() - confirmation_window.winfo_width()) // 2
-            y = (confirmation_window.winfo_screenheight() - confirmation_window.winfo_height()) // 2
-            confirmation_window.geometry(f"+{x}+{y}")
-
-            # Add message
-            message = f"Canvas exported successfully to:\n{os.path.basename(file_path)}"
-            label = ctk.CTkLabel(confirmation_window, text=message)
-            label.pack(pady=20)
-
-            # Auto-close after 2 seconds
-            confirmation_window.after(2000, confirmation_window.destroy)
-
-        except Exception as e:
-            # Show error message
-            error_window = ctk.CTkToplevel(self)
-            error_window.title("Export Error")
-            error_window.geometry("300x100")
-            error_window.resizable(False, False)
-
-            # Center the window
-            error_window.update_idletasks()
-            x = (error_window.winfo_screenwidth() - error_window.winfo_width()) // 2
-            y = (error_window.winfo_screenheight() - error_window.winfo_height()) // 2
-            error_window.geometry(f"+{x}+{y}")
-
-            # Add message
-            label = ctk.CTkLabel(error_window, text=f"Error exporting canvas:\n{str(e)}")
-            label.pack(pady=20)
+            os.remove(temp_ps_file)
+        except:
+            pass
 
     def on_button_press(self, event):
         self.start_x = event.x

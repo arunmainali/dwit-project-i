@@ -95,8 +95,8 @@ class ToolbarFrame(tk.Frame):
         self.color_dropdown.grid(row = 5, column = 1)
 
         self.export_button.grid(row = 3, column = 1)
-        self.export_format_label.grid(row = 4, column = 0)
-        self.export_format_dropdown.grid(row = 4, column = 1)
+        self.export_format_label.grid(row = 6, column = 0)
+        self.export_format_dropdown.grid(row = 6, column = 1)
 
 
 class CanvasFrame(tk.Frame):

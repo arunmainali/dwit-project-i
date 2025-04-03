@@ -159,35 +159,27 @@ class CanvasFrame(tk.Frame):
     def update_stroke_color(self, color):
         self.stroke_color = color
 
-    # Fix for the text widget issue
     def create_text_box(self, x, y):
-        # Create a text entry widget on the canvas
         text_widget = tk.Text(self.canvas, width=20, height=4, wrap=tk.WORD,
                               font=('Arial', int(self.toolbar_frame.stroke_width.get())),
                               fg=self.stroke_color)
 
-        # Place the text widget at the clicked position
         text_widget_window = self.canvas.create_window(x, y, window=text_widget, anchor=tk.NW)
 
-        # Store the coordinates along with the text widget
         self.text_widgets.append((text_widget, text_widget_window, x, y))
 
-        # Add event handlers for the text widget
         text_widget.bind("<FocusOut>", lambda e, w=text_widget, win=text_widget_window, x=x, y=y:
         self.finalize_text(w, win, x, y))
         text_widget.bind("<Return>", lambda e, w=text_widget, win=text_widget_window, x=x, y=y:
         self.finalize_text(w, win, x, y))
 
-        # Focus the new text widget
         self.active_text = text_widget
         text_widget.focus_set()
 
     def finalize_text(self, text_widget, window_id, x, y):
-        # Convert entry widget to permanent text on the canvas
         text_content = text_widget.get("1.0", tk.END).strip()
 
         if text_content:
-            # Use the stored coordinates instead of trying to get them from canvas.coords
             self.canvas.create_text(
                 x, y,
                 text=text_content,
@@ -196,10 +188,8 @@ class CanvasFrame(tk.Frame):
                 anchor=tk.NW
             )
 
-        # Remove the text entry widget
         self.canvas.delete(window_id)
 
-        # Remove from our list of text widgets
         for widget_tuple in self.text_widgets[:]:
             if widget_tuple[0] == text_widget and widget_tuple[1] == window_id:
                 self.text_widgets.remove(widget_tuple)
@@ -208,7 +198,6 @@ class CanvasFrame(tk.Frame):
         self.active_text = None
 
     def export_image(self, format_type):
-        # Ask the user for a save location
         file_extension = format_type.lower()
         filename = filedialog.asksaveasfilename(
             defaultextension=f".{file_extension}",
@@ -219,34 +208,26 @@ class CanvasFrame(tk.Frame):
         )
 
         if not filename:
-            return  # User cancelled the dialog
+            return
 
-        # Get canvas dimensions
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
 
-        # Create a new image with the canvas dimensions and background color
         image = Image.new("RGB", (width, height), self.canvas_bg)
 
-        # Create a temporary file for the PostScript output
         temp_ps_file = "temp_canvas.ps"
 
-        # Save the canvas as a PostScript file
         self.canvas.postscript(file=temp_ps_file, colormode='color', width=width, height=height)
 
-        # Convert the PostScript to an image
         ps_image = Image.open(temp_ps_file)
 
-        # Paste the PS image onto our background
         image.paste(ps_image)
 
-        # Save the image in the requested format
         if format_type == 'PNG':
             image.save(filename, 'PNG')
         elif format_type == 'JPG':
             image.save(filename, 'JPEG')
 
-        # Clean up the temporary file
         try:
             os.remove(temp_ps_file)
         except:

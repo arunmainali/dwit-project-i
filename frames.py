@@ -31,7 +31,9 @@ class ToolbarFrame(tk.Frame):
         self.ellipse_image = ctk.CTkImage(Image.open('images/ellipse.png'))
         self.curve_line_image = ctk.CTkImage(Image.open('images/curve-line.png'))
         self.straight_line_image = ctk.CTkImage(Image.open('images/straight-line.png'))
-        # TODO: add an export image
+        self.clear_canvas_image = ctk.CTkImage(Image.open('images/clear-canvas.png'))
+        self.text_image = ctk.CTkImage(Image.open('images/text.png'))
+        self.export_image = ctk.CTkImage(Image.open('images/export.png'))
 
     def create_widgets(self):
         self.paint_brush_button = ctk.CTkButton(self, image=self.paint_brush_image, text='')
@@ -40,8 +42,9 @@ class ToolbarFrame(tk.Frame):
         self.ellipse_button = ctk.CTkButton(self, image=self.ellipse_image, text='')
         self.curve_line_button = ctk.CTkButton(self, image=self.curve_line_image, text='')
         self.straight_line_button = ctk.CTkButton(self, image=self.straight_line_image, text='')
+        self.clear_canvas_button = ctk.CTkButton(self, image=self.clear_canvas_image, text='')
         self.stroke_size_slider = ctk.CTkSlider(self, from_=1, to=20, variable=self.stroke_width)
-        self.text_button = ctk.CTkButton(self, text='Text')
+        self.text_button = ctk.CTkButton(self, image=self.text_image, text='')
         self.stroke_size_slider.grid(row=4, column=0, columnspan=2)
         self.color_label = ctk.CTkLabel(self, text='Color:')
         self.color_dropdown = ctk.CTkOptionMenu(
@@ -49,7 +52,7 @@ class ToolbarFrame(tk.Frame):
             values = self.color_options,
             variable = self.stroke_color,
         )
-        self.export_button = ctk.CTkButton(self, text = 'Export')
+        self.export_button = ctk.CTkButton(self, image=self.export_image, text='')
         self.export_format_label = ctk.CTkLabel(self, text = 'Format:')
         self.export_format_dropdown = ctk.CTkOptionMenu(
             self,
@@ -63,7 +66,7 @@ class ToolbarFrame(tk.Frame):
         self.eraser_button.configure(command=self.canvas_frame.select_eraser)
         self.rectangle_button.configure(command=self.canvas_frame.select_rectangle)
         self.ellipse_button.configure(command=self.canvas_frame.select_ellipse)
-        self.curve_line_button.configure(command=self.canvas_frame.select_curve_line)
+        self.clear_canvas_button.configure(command=self.canvas_frame.clear_canvas)
         self.straight_line_button.configure(command=self.canvas_frame.select_straight_line)
         self.text_button.configure(command = self.canvas_frame.select_text)
         self.color_dropdown.configure(command=self.on_color_change)
@@ -87,7 +90,7 @@ class ToolbarFrame(tk.Frame):
         self.eraser_button.grid(row=0, column=1)
         self.rectangle_button.grid(row=1, column=0)
         self.ellipse_button.grid(row=1, column=1)
-        self.curve_line_button.grid(row=2, column=0)
+        self.clear_canvas_button.grid(row=2, column=0)
         self.straight_line_button.grid(row=2, column=1)
         self.text_button.grid(row = 3, column = 0)
 
